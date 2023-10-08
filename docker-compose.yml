@@ -1,0 +1,44 @@
+version: '3.6'
+
+
+services:
+  my-mongodb:
+    image: mongo:4.2.3-bionic
+    container_name: my-mongodb
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_DATABASE=test
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - mongodb:/data/db
+      - mongoconfig:/data/configdb
+    networks:
+      - mongo_net
+
+  app: 
+    container_name: app 
+    build:
+      context: . 
+      dockerfile: Dockerfile 
+    environment:  
+      CONFIG_PATH: config/local.yml
+    ports: 
+      - 8080:8080 
+    mem_limit: 1g 
+    depends_on: 
+      - my-mongodb 
+    volumes: 
+      - /etc/localtime:/etc/localtime:ro 
+    restart: on-failure 
+    networks: 
+      - mongo_net 
+ 
+volumes:
+  mongodb:
+  mongoconfig:
+
+networks:
+  mongo_net:
+    driver: bridge
