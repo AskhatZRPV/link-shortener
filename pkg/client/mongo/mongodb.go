@@ -12,14 +12,17 @@ import (
 func NewClient(ctx context.Context, host, port, username, password, database, collection string) (*mongo.Collection, error) {
 	var mongoDBURL string
 	var anonymous bool
+
 	if username == "" || password == "" {
 		anonymous = true
 		mongoDBURL = fmt.Sprintf("mongodb://%s:%s", host, port)
 	} else {
 		mongoDBURL = fmt.Sprintf("mongodb://%s:%s@%s:%s", username, password, host, port)
 	}
+
 	reqCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+
 	clientOptions := options.Client().ApplyURI(mongoDBURL)
 	if !anonymous {
 		clientOptions.SetAuth(options.Credential{
@@ -28,6 +31,7 @@ func NewClient(ctx context.Context, host, port, username, password, database, co
 			PasswordSet: true,
 		})
 	}
+
 	client, err := mongo.Connect(reqCtx, clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client to mongodb due to error %w", err)

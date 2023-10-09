@@ -1,11 +1,12 @@
 package v1
 
 import (
-	"fmt"
 	"link-shortener/internal/controller/http/dto"
 	"link-shortener/internal/domain/entity"
 	link_usecase "link-shortener/internal/domain/usecase/link"
+	"link-shortener/pkg/httperrors"
 	"log/slog"
+	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,13 +15,6 @@ const (
 	createURL   = "/"
 	redirectURL = "/:alias"
 )
-
-type LinkHandler interface {
-	Register(router *fiber.App)
-	Create(c *fiber.Ctx)
-	Get(c *fiber.Ctx)
-	Redirect(c *fiber.Ctx)
-}
 
 type handler struct {
 	lu  link_usecase.Link
@@ -39,7 +33,7 @@ func (h *handler) Register(router *fiber.App) {
 }
 
 func (h *handler) Create(c *fiber.Ctx) error {
-	var linkDto *dto.Link
+	var linkDto dto.CreateLink
 
 	c.BodyParser(&linkDto)
 
@@ -48,9 +42,11 @@ func (h *handler) Create(c *fiber.Ctx) error {
 		Hash:   linkDto.Hash,
 		Domain: linkDto.DomainName,
 	}
+
 	link, err := h.lu.Create(c.Context(), linkDto)
 	if err != nil {
-		return err
+		h.log.Error(err.Error())
+		return c.Status(http.StatusBadRequest).JSON(httperrors.BuildHttpError(err))
 	}
 
 	return c.JSON(link)
@@ -60,26 +56,27 @@ func (h *handler) Create(c *fiber.Ctx) error {
 func (h *handler) Redirect(c *fiber.Ctx) error {
 	link, err := h.lu.GetByHash(c.Context(), c.Params("alias"))
 	if err != nil {
-		return err
+		h.log.Error(err.Error())
+		return c.Status(http.StatusNotFound).JSON(httperrors.BuildHttpError(err))
 	}
+
 	return c.Redirect(link.URL)
 }
 
 func (h *handler) Get(c *fiber.Ctx) error {
-	fmt.Println("123213132131321")
-	var link dto.LinkID
-	err := c.BodyParser(&link)
+	var linkDto dto.GetLink
+
+	err := c.BodyParser(&linkDto)
 	if err != nil {
+		h.log.Error(err.Error())
 		return err
 	}
 
-	link2, err := h.lu.GetByID(c.Context(), link.ID)
+	link, err := h.lu.GetByID(c.Context(), linkDto.ID)
 	if err != nil {
-		return err
+		h.log.Error(err.Error())
+		return c.Status(http.StatusNotFound).JSON(httperrors.BuildHttpError(err))
 	}
-	// b, err := json.Marshal(*link2)
-	// if err != nil {
-	// 	return err
-	// }
-	return c.JSON(link2)
+
+	return c.JSON(link)
 }

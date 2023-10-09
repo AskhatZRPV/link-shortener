@@ -9,7 +9,7 @@ import (
 )
 
 type Link interface {
-	Create(ctx context.Context, link *dto.Link) (*entity.Link, error)
+	Create(ctx context.Context, link dto.CreateLink) (*entity.Link, error)
 	GetAll(ctx context.Context) ([]entity.Link, error)
 	GetByID(ctx context.Context, id string) (*entity.Link, error)
 	GetByHash(ctx context.Context, hash string) (*entity.Link, error)
@@ -23,8 +23,9 @@ func NewLinkUsecase(lr mongodb.Repository) Link {
 	return &link{lr: lr}
 }
 
-func (l *link) Create(ctx context.Context, link *dto.Link) (*entity.Link, error) {
+func (l *link) Create(ctx context.Context, link dto.CreateLink) (*entity.Link, error) {
 	var urlHash string
+
 	if len(link.Hash) != 0 {
 		urlHash = link.Hash
 		_, err := l.lr.GetOneByHash(urlHash)
@@ -49,6 +50,7 @@ func (l *link) Create(ctx context.Context, link *dto.Link) (*entity.Link, error)
 	if err != nil {
 		return nil, err
 	}
+
 	return res, nil
 }
 
@@ -61,6 +63,7 @@ func (l *link) GetByID(ctx context.Context, id string) (*entity.Link, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return link, nil
 }
 
@@ -69,5 +72,6 @@ func (l *link) GetByHash(ctx context.Context, hash string) (*entity.Link, error)
 	if err != nil {
 		return nil, err
 	}
+
 	return link, nil
 }

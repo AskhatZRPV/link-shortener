@@ -12,6 +12,8 @@ import (
 	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 )
 
 func main() {
@@ -38,10 +40,16 @@ func main() {
 	log = log.With(slog.String("env", cfg.Env))
 	log.Info("initializing server", slog.String("address", cfg.Address))
 
-	router := fiber.New()
+	app := fiber.New()
+	// Logging Request ID
+	app.Use(requestid.New())
+	app.Use(logger.New(logger.Config{
+		// For more options, see the Config section
+		Format: "${pid} ${locals:requestid} ${status} - ${method} ${path}​\n",
+	}))
 
 	v1 := v1.NewHandler(lu)
-	v1.Register(router)
+	v1.Register(app)
 
-	router.Listen(cfg.Address)
+	app.Listen(cfg.Address)
 }
