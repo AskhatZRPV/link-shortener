@@ -1,15 +1,15 @@
-package link_usecase
+package usecase
 
 import (
 	"context"
-	"link-shortener/internal/adapters/db/mongodb"
-	"link-shortener/internal/controller/http/dto"
-	"link-shortener/internal/domain/entity"
+	"link-shortener/internal/domain/link/entity"
+	"link-shortener/internal/infra/persistence/mongodb"
+	"link-shortener/internal/interface/delivery/api_http/link/dto"
 	"link-shortener/pkg/utils/random"
 )
 
 type Link interface {
-	Create(ctx context.Context, link dto.CreateLink) (*entity.Link, error)
+	Create(ctx context.Context, link dto.CreateLinkDto) (*entity.Link, error)
 	GetAll(ctx context.Context) ([]entity.Link, error)
 	GetByID(ctx context.Context, id string) (*entity.Link, error)
 	GetByHash(ctx context.Context, hash string) (*entity.Link, error)
@@ -23,7 +23,7 @@ func NewLinkUsecase(lr mongodb.Repository) Link {
 	return &link{lr: lr}
 }
 
-func (l *link) Create(ctx context.Context, link dto.CreateLink) (*entity.Link, error) {
+func (l *link) Create(ctx context.Context, link dto.CreateLinkDto) (*entity.Link, error) {
 	var urlHash string
 
 	if len(link.Hash) != 0 {
@@ -74,4 +74,8 @@ func (l *link) GetByHash(ctx context.Context, hash string) (*entity.Link, error)
 	}
 
 	return link, nil
+}
+
+func (l *link) Delete(ctx context.Context, id string) {
+
 }

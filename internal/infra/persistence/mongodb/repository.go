@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"link-shortener/internal/domain/entity"
+	"link-shortener/internal/domain/link/entity"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"

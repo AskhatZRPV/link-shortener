@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"link-shortener/internal/adapters/db/mongodb"
 	"link-shortener/internal/config"
-	v1 "link-shortener/internal/controller/http/v1"
-	link "link-shortener/internal/domain/usecase/link"
+	"link-shortener/internal/domain/link/usecase"
+	"link-shortener/internal/infra/persistence/mongodb"
+	apihttp "link-shortener/internal/interface/delivery/api_http"
 	"link-shortener/pkg/client/mongo"
 	"link-shortener/pkg/logging"
 
@@ -35,7 +35,7 @@ func main() {
 	}
 
 	mongoRepo := mongodb.NewMongoRepository(mongoClient)
-	lu := link.NewLinkUsecase(mongoRepo)
+	lu := usecase.NewLinkUsecase(mongoRepo)
 
 	log = log.With(slog.String("env", cfg.Env))
 	log.Info("initializing server", slog.String("address", cfg.Address))
@@ -48,8 +48,7 @@ func main() {
 		Format: "${pid} ${locals:requestid} ${status} - ${method} ${path}​\n",
 	}))
 
-	v1 := v1.NewHandler(lu)
-	v1.Register(app)
+	apihttp.Register(app, lu)
 
 	app.Listen(cfg.Address)
 }
