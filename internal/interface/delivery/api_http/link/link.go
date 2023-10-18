@@ -1,11 +1,13 @@
-package linkhandler
+package link
 
 import (
 	"link-shortener/internal/domain/link/entity"
-	"link-shortener/internal/domain/link/usecase"
+	link_usecase "link-shortener/internal/domain/link/usecase"
 	"link-shortener/internal/interface/delivery/api_http/errors"
 	"link-shortener/internal/interface/delivery/api_http/link/dto"
 	"net/http"
+
+	jwtware "github.com/gofiber/contrib/jwt"
 
 	"log/slog"
 
@@ -13,24 +15,29 @@ import (
 )
 
 type LinkHandler struct {
-	lu  usecase.Link
+	lu  link_usecase.Link
 	log *slog.Logger
 }
 
-func NewHandler(lu usecase.Link) *LinkHandler {
+func NewHandler(lu link_usecase.Link) *LinkHandler {
 	return &LinkHandler{lu: lu}
 }
 
 func (handler LinkHandler) Route(app *fiber.App) {
-	app.Post(createURL, handler.Create)
 	app.Get(redirectURL, handler.Redirect)
+	app.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{
+			Key: []byte("something")},
+	}))
+	app.Post(createURL, handler.Create)
 }
 
 func (h LinkHandler) Create(c *fiber.Ctx) error {
 	var linkDto dto.CreateLinkDto
 
 	if err := c.BodyParser(&linkDto); err != nil {
-
+		h.log.Error(err.Error())
+		return err
 	}
 
 	link := &entity.Link{

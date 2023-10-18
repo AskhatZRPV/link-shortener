@@ -1,4 +1,4 @@
-package linkhandler
+package link
 
 const (
 	createURL   = "/"

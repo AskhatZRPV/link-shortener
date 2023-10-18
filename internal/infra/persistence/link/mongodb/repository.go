@@ -1,4 +1,4 @@
-package mongodb
+package linkmongo
 
 import (
 	"context"
@@ -13,11 +13,10 @@ import (
 )
 
 type Repository interface {
+	Create(link *entity.Link) (*entity.Link, error)
 	GetOne(id string) (*entity.Link, error)
 	GetOneByHash(hash string) (*entity.Link, error)
-	GetOneByUrl(url string) (*entity.Link, error)
-	Create(link *entity.Link) (*entity.Link, error)
-	Delete(book *entity.Link) error
+	Delete(id string) error
 }
 
 type mongoRepository struct {
@@ -29,55 +28,55 @@ func NewMongoRepository(collection *mongo.Collection) Repository {
 }
 
 func (r *mongoRepository) GetOne(id string) (*entity.Link, error) {
-	uid, err := primitive.ObjectIDFromHex(id)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
+
 	var out entity.Link
-	err = r.collection.
-		FindOne(context.Background(), bson.M{"_id": uid}).
-		Decode(&out)
-	if err != nil {
+
+	if err = r.collection.
+		FindOne(ctx, bson.M{"_id": oid}).
+		Decode(&out); err != nil {
+
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return &entity.Link{}, ErrLinkNotFound
 		}
+
 		return &entity.Link{}, err
 	}
+
 	return &out, nil
 }
 
 func (r *mongoRepository) GetOneByHash(hash string) (*entity.Link, error) {
-	var out entity.Link
-	err := r.collection.
-		FindOne(context.Background(), bson.M{"hash": hash}).
-		Decode(&out)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return &entity.Link{}, ErrLinkNotFound
-		}
-		return &entity.Link{}, err
-	}
-	return &out, nil
-}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-func (r *mongoRepository) GetOneByUrl(url string) (*entity.Link, error) {
 	var out entity.Link
-	err := r.collection.
-		FindOne(context.Background(), bson.M{"url": url}).
-		Decode(&out)
-	if err != nil {
+
+	if err := r.collection.
+		FindOne(ctx, bson.M{"hash": hash}).
+		Decode(&out); err != nil {
+
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return &entity.Link{}, ErrLinkNotFound
 		}
+
 		return &entity.Link{}, err
 	}
+
 	return &out, nil
 }
 
 func (r *mongoRepository) Create(link *entity.Link) (*entity.Link, error) {
-	nCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	result, err := r.collection.InsertOne(nCtx, link)
+
+	result, err := r.collection.InsertOne(ctx, link)
 	if err != nil {
 		return nil, err
 	}
@@ -91,9 +90,26 @@ func (r *mongoRepository) Create(link *entity.Link) (*entity.Link, error) {
 		}
 		return ent, nil
 	}
+
 	return nil, err
 }
 
-func (r *mongoRepository) Delete(book *entity.Link) error {
+func (r *mongoRepository) Delete(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	res, err := r.collection.DeleteOne(ctx, bson.M{"_id": oid})
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return err
+	}
+
 	return nil
 }

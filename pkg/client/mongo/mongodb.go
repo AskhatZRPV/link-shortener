@@ -9,7 +9,7 @@ import (
 	options "go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func NewClient(ctx context.Context, host, port, username, password, database, collection string) (*mongo.Collection, error) {
+func NewClient(ctx context.Context, host, port, username, password, database string) (*mongo.Database, error) {
 	var mongoDBURL string
 	var anonymous bool
 
@@ -42,5 +42,5 @@ func NewClient(ctx context.Context, host, port, username, password, database, co
 		return nil, fmt.Errorf("failed to create client to mongodb due to error %w", err)
 	}
 
-	return client.Database(database).Collection(collection), nil
+	return client.Database(database), nil
 }

@@ -1,9 +1,9 @@
-package usecase
+package link_usecase
 
 import (
 	"context"
 	"link-shortener/internal/domain/link/entity"
-	"link-shortener/internal/infra/persistence/mongodb"
+	linkmongo "link-shortener/internal/infra/persistence/link/mongodb"
 	"link-shortener/internal/interface/delivery/api_http/link/dto"
 	"link-shortener/pkg/utils/random"
 )
@@ -16,10 +16,10 @@ type Link interface {
 }
 
 type link struct {
-	lr mongodb.Repository
+	lr linkmongo.Repository
 }
 
-func NewLinkUsecase(lr mongodb.Repository) Link {
+func NewUsecase(lr linkmongo.Repository) Link {
 	return &link{lr: lr}
 }
 
@@ -54,6 +54,7 @@ func (l *link) Create(ctx context.Context, link dto.CreateLinkDto) (*entity.Link
 	return res, nil
 }
 
+// TODO:
 func (l *link) GetAll(ctx context.Context) ([]entity.Link, error) {
 	return nil, nil
 }
@@ -76,6 +77,10 @@ func (l *link) GetByHash(ctx context.Context, hash string) (*entity.Link, error)
 	return link, nil
 }
 
-func (l *link) Delete(ctx context.Context, id string) {
-
+func (l *link) Delete(ctx context.Context, id string) error {
+	err := l.lr.Delete(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
