@@ -21,7 +21,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /app ./cmd/main/main.go
 # the application is going to listen on by default.
 # https://docs.docker.com/engine/reference/builder/#expose
 
-EXPOSE 8080
+# EXPOSE 8080
 
 # Run
 CMD ["/app/main"]

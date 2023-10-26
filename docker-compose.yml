@@ -1,44 +1,70 @@
 version: '3.6'
 
-
 services:
-  my-mongodb:
-    image: mongo:4.2.3-bionic
-    container_name: my-mongodb
-    ports:
-      - 27017:27017
+  # Postgres
+  ls-postgres:
+    container_name: ls-postgres
+    image: postgres
     environment:
-      - MONGO_INITDB_DATABASE=test
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=admin
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
     volumes:
-      - mongodb:/data/db
-      - mongoconfig:/data/configdb
+       - postgres:/data/postgres
+       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
     networks:
-      - mongo_net
+      - ls_net
+    restart: unless-stopped
+  # PgAdmin
+  ls-pgadmin:
+    container_name: ls-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+       - pgadmin:/var/lib/pgadmin
 
-  app: 
-    container_name: app 
-    build:
-      context: . 
-      dockerfile: Dockerfile 
-    environment:  
-      CONFIG_PATH: config/local.yml
-    ports: 
-      - 8080:8080 
-    mem_limit: 1g 
-    depends_on: 
-      - my-mongodb 
-    volumes: 
-      - /etc/localtime:/etc/localtime:ro 
-    restart: on-failure 
-    networks: 
-      - mongo_net 
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - ls_net
+    restart: unless-stopped
+  # Redis
+  ls-redis:
+    image: redis
+    container_name: ls-redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    networks:
+      - ls_net
+  # Golang App
+  # ls-app: 
+  #   container_name: ls-app 
+  #   build:
+  #     context: . 
+  #     dockerfile: Dockerfile 
+  #   environment:  
+  #     CONFIG_PATH: config/local.yml
+  #   ports: 
+  #     - 8080:8080 
+  #   mem_limit: 1g 
+  #   depends_on: 
+  #     - ls-postgres 
+  #   volumes: 
+  #     - /etc/localtime:/etc/localtime:ro 
+  #   restart: on-failure 
+  #   networks: 
+  #     - ls_net 
  
 volumes:
-  mongodb:
-  mongoconfig:
+    postgres:
+    pgadmin:
 
 networks:
-  mongo_net:
+  ls_net:
     driver: bridge
