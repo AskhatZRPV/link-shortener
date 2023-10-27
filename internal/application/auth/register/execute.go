@@ -9,7 +9,7 @@ import (
 
 func (i *implementation) Execute(ctx context.Context, p *Payload) error {
 	_, err := i.userRepo.FindByUsername(ctx, p.Username)
-	if nil == err || !errors.Is(err, user.ErrUserNotFound) {
+	if err == nil || !errors.Is(err, user.ErrUserNotFound) {
 		return errors.Wrap(ErrAccountAlreadyExists, "account with such username exists")
 	}
 	pwd, err := i.ph.Hash(p.Password)

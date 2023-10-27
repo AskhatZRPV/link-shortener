@@ -1,6 +1,8 @@
 package session
 
-import "context"
+import (
+	"context"
+)
 
 type Repository interface {
 	Save(context.Context, *Session) error

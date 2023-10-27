@@ -5,18 +5,16 @@ import (
 	"fmt"
 )
 
-// "github.com/pkg/errors"
-
 var (
-	rootErr = errors.New("domain defined error")
+	errRoot = errors.New("domain defined error")
 )
 
 func New(msg string) error {
-	return fmt.Errorf("%w: %v", rootErr, msg)
+	return fmt.Errorf("%w: %v", errRoot, msg)
 }
 
 func Is(err error) bool {
-	return errors.Is(err, rootErr)
+	return errors.Is(err, errRoot)
 }
 
 func Join(errs ...error) error {
