@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func InitLogger(logLevel string) *slog.Logger {
+func New(logLevel string) *slog.Logger {
 	var log *slog.Logger
 
 	switch logLevel {

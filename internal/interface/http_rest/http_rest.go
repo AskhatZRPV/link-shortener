@@ -20,14 +20,13 @@ func New(lc fx.Lifecycle, config *config.Config, handlers []common.Handler) {
 		},
 	)
 	for _, h := range handlers {
-		fmt.Println(h)
 		f.Add(h.Method(), h.Pattern(), append(h.Middleware(), h.Handle)...)
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(_ context.Context) error {
 			go func() {
-				err := f.Listen(fmt.Sprintf("localhost:%s", config.Port))
+				err := f.Listen(fmt.Sprintf("0.0.0.0:%s", config.Port))
 				if err != nil {
 					panic(err)
 				}

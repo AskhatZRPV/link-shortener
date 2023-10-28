@@ -5,7 +5,7 @@ import (
 )
 
 type requestBody struct {
-	Alias string `json:"alias"`
+	Alias string `json:"alias,omitempty"`
 }
 
 func (r *requestBody) toUsecasePayload() *find.Payload {

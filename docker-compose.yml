@@ -43,23 +43,23 @@ services:
     networks:
       - ls_net
   # Golang App
-  # ls-app: 
-  #   container_name: ls-app 
-  #   build:
-  #     context: . 
-  #     dockerfile: Dockerfile 
-  #   environment:  
-  #     CONFIG_PATH: config/local.yml
-  #   ports: 
-  #     - 8080:8080 
-  #   mem_limit: 1g 
-  #   depends_on: 
-  #     - ls-postgres 
-  #   volumes: 
-  #     - /etc/localtime:/etc/localtime:ro 
-  #   restart: on-failure 
-  #   networks: 
-  #     - ls_net 
+  ls-app: 
+    container_name: ls-app 
+    build:
+      context: . 
+      dockerfile: Dockerfile 
+    environment:  
+      CONFIG_PATH: config/local.yml
+    ports: 
+      - 8080:8080 
+    mem_limit: 1g 
+    depends_on: 
+      - ls-postgres 
+    volumes: 
+      - /etc/localtime:/etc/localtime:ro 
+    restart: on-failure 
+    networks: 
+      - ls_net 
  
 volumes:
     postgres:
