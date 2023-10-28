@@ -1,4 +1,4 @@
-package random
+package randomalias
 
 import (
 	"math/rand"

@@ -1,5 +1,5 @@
 env: "local"
-pg_connection_string: "postgresql://127.0.0.1:5432/postgres?user=postgres&password=changeme&sslmode=disable"
+pg_connection_string: "postgresql://ls-postgres:5432/postgres?user=postgres&password=changeme&sslmode=disable"
 http_server:
   port: "8080"
   timeout: 4s
